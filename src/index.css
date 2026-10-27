@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 79 70 229;
+
+    /* Centralized Typography Design Tokens */
+    --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* Responsive Type Scale */
+    --font-size-2xs: 0.6875rem; /* 11px */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 1.875rem;  /* 30px */
+    --font-size-4xl: 2.25rem;   /* 36px */
+
+    /* Font Weights */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Line Heights */
+    --line-height-none: 1;
+    --line-height-tight: 1.25;
+    --line-height-snug: 1.375;
+    --line-height-base: 1.5;
+    --line-height-relaxed: 1.625;
+
+    /* Letter Spacing */
+    --letter-spacing-tight: -0.015em;
+    --letter-spacing-normal: 0em;
+    --letter-spacing-wide: 0.025em;
+  }
+
+  * {
+    border-color: theme('colors.slate.200');
+  }
+
+  .dark * {
+    border-color: theme('colors.slate.800');
+  }
+
+  html {
+    font-family: var(--font-family-base);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-base);
+    font-weight: var(--font-weight-regular);
+  }
+
+  /* Universal form, button, and input element typography inheritance */
+  input,
+  button,
+  select,
+  textarea,
+  optgroup {
+    font-family: var(--font-family-base) !important;
+    font-feature-settings: inherit;
+    letter-spacing: inherit;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-base);
+  }
+
+  /* Heading Hierarchy */
+  h1 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  h2 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  h3 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+  }
+
+  h4 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+  }
+
+  p {
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* Tables and Data Displays */
+  table {
+    font-family: var(--font-family-base);
+    font-size: 0.8125rem; /* 13px */
+  }
+
+  th {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-wide);
+    line-height: 1.25rem;
+  }
+
+  td {
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.375rem;
+  }
+}
+
+@layer components {
+  /* Centralized Typography Utility Classes */
+  .page-heading {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  @media (min-width: 640px) {
+    .page-heading {
+      font-size: var(--font-size-3xl);
+    }
+  }
+  @media (min-width: 1024px) {
+    .page-heading {
+      font-size: var(--font-size-4xl);
+    }
+  }
+
+  .section-heading {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  @media (min-width: 640px) {
+    .section-heading {
+      font-size: var(--font-size-2xl);
+    }
+  }
+
+  .card-heading {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
+  }
+  @media (min-width: 640px) {
+    .card-heading {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  .body-copy {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-relaxed);
+  }
+  @media (min-width: 640px) {
+    .body-copy {
+      font-size: var(--font-size-base);
+    }
+  }
+
+  .data-table-cell {
+    font-family: var(--font-family-base);
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.35rem;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Print utility for viva report export */
+@media print {
+  nav, footer, .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

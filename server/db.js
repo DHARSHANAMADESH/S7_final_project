@@ -1,0 +1,1214 @@
+import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_FILE = path.join(__dirname, 'data_store.json');
+
+// Initial seed student profiles for testing authenticated users
+const INITIAL_STUDENT_PROFILES = [
+  {
+    userId: 'user-student-a',
+    id: 'profile-student-a',
+    name: 'Sasidharan R',
+    email: 'student.a@university.edu',
+    phone: '+91 98765 43210',
+    location: 'Chennai, India',
+    college: 'National Institute of Technology',
+    degree: 'Bachelor of Technology (B.Tech)',
+    department: 'Computer Science and Engineering',
+    cgpa: 8.8,
+    graduationYear: 2026,
+    skills: [
+      { name: 'Java', level: 'Advanced', category: 'Language' },
+      { name: 'React', level: 'Advanced', category: 'Framework' },
+      { name: 'SQL', level: 'Intermediate', category: 'Database' },
+      { name: 'JavaScript', level: 'Advanced', category: 'Language' },
+      { name: 'Data Structures & Algorithms', level: 'Advanced', category: 'Core CS' },
+      { name: 'Spring Boot', level: 'Intermediate', category: 'Framework' }
+    ],
+    programmingLanguages: ['Java', 'JavaScript', 'SQL', 'C++'],
+    certifications: [
+      { id: 'cert-1', name: 'Oracle Certified Associate: Java SE 11', issuer: 'Oracle', year: '2025' },
+      { id: 'cert-2', name: 'Meta Front-End Developer Certificate', issuer: 'Coursera / Meta', year: '2025' }
+    ],
+    projects: [
+      {
+        id: 'proj-1',
+        name: 'E-Commerce Platform',
+        description: 'Microservices based shopping portal with React, Node.js and SQL.',
+        technologies: ['React', 'Node.js', 'SQL', 'Java']
+      },
+      {
+        id: 'proj-2',
+        name: 'Placement Management Portal',
+        description: 'Placement matching system with Java backend and MySQL database.',
+        technologies: ['Java', 'SQL', 'React']
+      }
+    ],
+    careerPreferences: {
+      preferredRoles: ['Software Developer', 'Software Engineer', 'Full Stack Developer'],
+      preferredLocations: ['Chennai', 'Bengaluru'],
+      experienceLevel: 'Fresher / Entry-level',
+      careerInterests: ['Product Engineering', 'Cloud Systems'],
+      minSalaryLPA: 6
+    },
+    softSkills: {
+      aptitudeScore: 88,
+      communicationScore: 85
+    },
+    resumeFileName: 'Sasidharan_Resume_2026.pdf',
+    resumeScore: 88,
+    profileStrength: 90
+  },
+  {
+    userId: 'user-student-b',
+    id: 'profile-student-b',
+    name: 'Priya Sharma',
+    email: 'student.b@university.edu',
+    phone: '+91 91234 56789',
+    location: 'Bengaluru, India',
+    college: 'Anna University',
+    degree: 'Bachelor of Technology (B.Tech)',
+    department: 'Information Technology',
+    cgpa: 9.1,
+    graduationYear: 2026,
+    skills: [
+      { name: 'Python', level: 'Expert', category: 'Language' },
+      { name: 'Machine Learning', level: 'Advanced', category: 'Core CS' },
+      { name: 'SQL', level: 'Advanced', category: 'Database' },
+      { name: 'Pandas', level: 'Expert', category: 'Tool' },
+      { name: 'TensorFlow', level: 'Intermediate', category: 'Framework' },
+      { name: 'Data Analysis', level: 'Advanced', category: 'Core CS' }
+    ],
+    programmingLanguages: ['Python', 'SQL', 'R', 'C++'],
+    certifications: [
+      { id: 'cert-3', name: 'Deep Learning Specialization', issuer: 'DeepLearning.AI', year: '2025' }
+    ],
+    projects: [
+      {
+        id: 'proj-3',
+        name: 'Customer Churn Predictor',
+        description: 'Predictive analytics pipeline trained with Random Forest and XGBoost in Python.',
+        technologies: ['Python', 'Pandas', 'Scikit-Learn', 'SQL']
+      }
+    ],
+    careerPreferences: {
+      preferredRoles: ['Data Scientist', 'Data Analyst', 'Machine Learning Engineer'],
+      preferredLocations: ['Bengaluru', 'Hyderabad'],
+      experienceLevel: 'Fresher / Entry-level',
+      careerInterests: ['Artificial Intelligence', 'Data Analytics'],
+      minSalaryLPA: 8
+    },
+    softSkills: {
+      aptitudeScore: 92,
+      communicationScore: 88
+    },
+    resumeFileName: 'Priya_Data_Science_Resume.pdf',
+    resumeScore: 92,
+    profileStrength: 92
+  }
+];
+
+// Initial 20 comprehensive industry companies with authentic criteria
+const INITIAL_COMPANIES = [
+  {
+    id: 'comp-1',
+    name: 'Zoho Corporation',
+    logo: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=100&auto=format&fit=crop&q=80',
+    industry: 'Software / SaaS',
+    description: 'Zoho Corporation is a leading technology company offering SaaS cloud business suites.',
+    website: 'https://www.zoho.com',
+    headquarters: 'Chennai, Tamil Nadu',
+    locations: ['Chennai', 'Tenkasi', 'Bengaluru'],
+    salaryDisplay: '₹6–10 LPA',
+    minLPA: 6,
+    maxLPA: 10,
+    requiredSkills: ['Java', 'SQL', 'Data Structures & Algorithms', 'Object Oriented Programming'],
+    preferredSkills: ['React', 'Spring Boot', 'REST API', 'Linux'],
+    minimumCgpa: 7.0,
+    companySize: '15,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'React', 'PostgreSQL', 'Redis', 'Linux'],
+    benefits: ['Healthy Meals', 'Transit Allowance', 'Medical Insurance', 'Sports Facilities'],
+    hiringProcess: [
+      { step: 1, title: 'Round 1: Online Aptitude & Basic Code', description: 'Logical aptitude and fundamental programming.' },
+      { step: 2, title: 'Round 2: Advanced Coding', description: 'Complex DSA problems and matrix logic.' },
+      { step: 3, title: 'Round 3: Application Development', description: 'Build a mini application in 2.5 hours.' },
+      { step: 4, title: 'Round 4: Technical & HR Interview', description: 'System discussion and cultural fit.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-zoho-1',
+        title: 'Software Developer',
+        department: 'Product Engineering',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹6–10 LPA',
+        minLPA: 6,
+        maxLPA: 10,
+        openings: 45,
+        requirements: ['Strong command over Java', 'Solid SQL knowledge', 'Spring Boot fundamentals']
+      }
+    ]
+  },
+  {
+    id: 'comp-2',
+    name: 'Microsoft',
+    logo: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=100&auto=format&fit=crop&q=80',
+    industry: 'Cloud & Enterprise Computing',
+    description: 'Microsoft Corporation is a global leader in software, cloud infrastructure, and AI technologies.',
+    website: 'https://microsoft.com/careers',
+    headquarters: 'Hyderabad / Bengaluru',
+    locations: ['Bengaluru', 'Hyderabad', 'Noida'],
+    salaryDisplay: '₹18–28 LPA',
+    minLPA: 18,
+    maxLPA: 28,
+    requiredSkills: ['Data Structures & Algorithms', 'C++', 'Java', 'System Design'],
+    preferredSkills: ['Azure', 'Distributed Systems', 'Docker', 'TypeScript'],
+    minimumCgpa: 8.0,
+    companySize: '220,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['C++', 'C#', 'Azure', 'TypeScript', 'Kubernetes'],
+    benefits: ['Stock Grants', 'Premium Health Plan', 'Wellness Allowance'],
+    hiringProcess: [
+      { step: 1, title: 'Online Assessment', description: '3 algorithmic problems on Codility.' },
+      { step: 2, title: 'Technical Rounds (3 Rounds)', description: 'DSA, problem solving and system design.' },
+      { step: 3, title: 'Director AA Round', description: 'Behavioral and architecture review.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-ms-1',
+        title: 'Software Engineer',
+        department: 'Azure Core',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹18–28 LPA',
+        minLPA: 18,
+        maxLPA: 28,
+        openings: 25,
+        requirements: ['B.Tech in CSE / IT with CGPA >= 8.0', 'Exceptional problem solving in DSA']
+      }
+    ]
+  },
+  {
+    id: 'comp-3',
+    name: 'Freshworks',
+    logo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=100&auto=format&fit=crop&q=80',
+    industry: 'Customer Engagement SaaS',
+    description: 'Freshworks creates user-centric SaaS customer engagement software.',
+    website: 'https://freshworks.com',
+    headquarters: 'Chennai, Tamil Nadu',
+    locations: ['Chennai', 'Bengaluru'],
+    salaryDisplay: '₹10–15 LPA',
+    minLPA: 10,
+    maxLPA: 15,
+    requiredSkills: ['JavaScript', 'React', 'Node.js', 'SQL', 'REST API'],
+    preferredSkills: ['Ruby on Rails', 'AWS', 'Redis'],
+    minimumCgpa: 7.2,
+    companySize: '6,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['React', 'Node.js', 'AWS', 'MySQL'],
+    benefits: ['Flexible Hours', 'Learning Stipend', 'Health Insurance'],
+    hiringProcess: [
+      { step: 1, title: 'HackerEarth Assessment', description: 'Full-stack problem solving test.' },
+      { step: 2, title: 'Technical Interview 1', description: 'React architecture and event loop.' },
+      { step: 3, title: 'Technical Interview 2 & HR', description: 'Backend API design and culture fit.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-fw-1',
+        title: 'Full Stack Developer',
+        department: 'Product Development',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹10–15 LPA',
+        minLPA: 10,
+        maxLPA: 15,
+        openings: 20,
+        requirements: ['Proficiency in React and Node.js', 'Solid SQL or NoSQL database foundation']
+      }
+    ]
+  },
+  {
+    id: 'comp-4',
+    name: 'Fractal Analytics',
+    logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&auto=format&fit=crop&q=80',
+    industry: 'AI & Data Analytics',
+    description: 'Fractal is a global leader in artificial intelligence and analytics powering Fortune 500 decision-making.',
+    website: 'https://fractal.ai',
+    headquarters: 'Mumbai / Bengaluru',
+    locations: ['Bengaluru', 'Hyderabad', 'Mumbai'],
+    salaryDisplay: '₹8–14 LPA',
+    minLPA: 8,
+    maxLPA: 14,
+    requiredSkills: ['Python', 'Machine Learning', 'Pandas', 'SQL'],
+    preferredSkills: ['TensorFlow', 'Power BI', 'Scikit-Learn'],
+    minimumCgpa: 7.0,
+    companySize: '4,500+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Python', 'TensorFlow', 'SQL', 'GCP', 'Pandas'],
+    benefits: ['AI Training Programs', 'Health Insurance', 'Annual Bonus'],
+    hiringProcess: [
+      { step: 1, title: 'Analytics Online Assessment', description: 'Data interpretation, Python programming, and statistics.' },
+      { step: 2, title: 'Technical Interview 1', description: 'Pandas data wrangling, ML model evaluation, and SQL.' },
+      { step: 3, title: 'Client Scenario & HR', description: 'Business analytics scenario discussion.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-fractal-1',
+        title: 'Data Scientist / ML Engineer',
+        department: 'Decision Sciences',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹8–14 LPA',
+        minLPA: 8,
+        maxLPA: 14,
+        openings: 30,
+        requirements: ['Solid Python and Pandas skills', 'Understanding of machine learning pipelines and SQL']
+      }
+    ]
+  },
+  {
+    id: 'comp-5',
+    name: 'Mu Sigma',
+    logo: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&auto=format&fit=crop&q=80',
+    industry: 'Big Data & Decision Sciences',
+    description: 'Mu Sigma helps enterprises institutionalize data-driven decision sciences.',
+    website: 'https://mu-sigma.com',
+    headquarters: 'Bengaluru, Karnataka',
+    locations: ['Bengaluru'],
+    salaryDisplay: '₹7–11 LPA',
+    minLPA: 7,
+    maxLPA: 11,
+    requiredSkills: ['Python', 'SQL', 'Pandas', 'Data Analysis'],
+    preferredSkills: ['R', 'Machine Learning', 'Power BI'],
+    minimumCgpa: 6.8,
+    companySize: '3,500+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Python', 'R', 'SQL', 'Tableau'],
+    benefits: ['Mu Sigma University Training', 'Medical Coverage', 'Performance Incentives'],
+    hiringProcess: [
+      { step: 1, title: 'Mu Sigma Aptitude & Logic Test', description: 'Cognitive problem solving and data analysis.' },
+      { step: 2, title: 'Video Synthesis Round', description: 'Problem-solving communication.' },
+      { step: 3, title: 'Personal Interview', description: 'Analytical thinking and data wrangling in Python/SQL.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-musigma-1',
+        title: 'Decision Scientist / Data Analyst',
+        department: 'Analytics Consulting',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹7–11 LPA',
+        minLPA: 7,
+        maxLPA: 11,
+        openings: 50,
+        requirements: ['Aptitude for analytical deduction', 'Python, SQL, and data analysis skills']
+      }
+    ]
+  },
+  {
+    id: 'comp-6',
+    name: 'TCS (Tata Consultancy Services)',
+    logo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=crop&q=80',
+    industry: 'IT Services & Consulting',
+    description: 'TCS is a global leader in IT services, consulting, and digital solutions.',
+    website: 'https://www.tcs.com',
+    headquarters: 'Mumbai, Maharashtra',
+    locations: ['Chennai', 'Bengaluru', 'Hyderabad', 'Pune'],
+    salaryDisplay: '₹7.2–9.0 LPA (TCS Digital / Prime)',
+    minLPA: 7.2,
+    maxLPA: 9.0,
+    requiredSkills: ['Java', 'SQL', 'C++', 'Python'],
+    preferredSkills: ['Spring Boot', 'React', 'Cloud'],
+    minimumCgpa: 6.5,
+    companySize: '600,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Spring', 'Oracle DB', 'Angular'],
+    benefits: ['Health Insurance', 'Elevate Fast-track Growth'],
+    hiringProcess: [
+      { step: 1, title: 'TCS NQT Assessment', description: 'Cognitive and advanced programming.' },
+      { step: 2, title: 'Technical Interview', description: 'Core CS subjects and coding.' },
+      { step: 3, title: 'HR Round', description: 'Documentation and role allocation.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-tcs-1',
+        title: 'Software Developer (TCS Digital)',
+        department: 'Digital Enterprise',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹7.2–9.0 LPA',
+        minLPA: 7.2,
+        maxLPA: 9.0,
+        openings: 100,
+        requirements: ['High score in NQT coding', 'Knowledge of Java / SQL']
+      }
+    ]
+  },
+  {
+    id: 'comp-7',
+    name: 'Accolite Digital',
+    logo: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=100&auto=format&fit=crop&q=80',
+    industry: 'Digital Transformation & Product Engineering',
+    description: 'Accolite Digital solves complex digital challenges through human-centered engineering.',
+    website: 'https://www.accolite.com',
+    headquarters: 'Bengaluru, Karnataka',
+    locations: ['Chennai', 'Bengaluru', 'Hyderabad'],
+    salaryDisplay: '₹8–11 LPA',
+    minLPA: 8,
+    maxLPA: 11,
+    requiredSkills: ['Java', 'SQL', 'Data Structures & Algorithms', 'Spring Boot'],
+    preferredSkills: ['React', 'Microservices', 'Git'],
+    minimumCgpa: 7.0,
+    companySize: '3,500+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Spring Boot', 'React', 'Oracle'],
+    benefits: ['Health Insurance', 'Certification Reimbursement'],
+    hiringProcess: [
+      { step: 1, title: 'Eduthrill Assessment', description: 'CS fundamentals and coding.' },
+      { step: 2, title: 'Technical Interview', description: 'Java internals and algorithms.' },
+      { step: 3, title: 'HR Round', description: 'Offer rollout.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-acc-1',
+        title: 'Software Developer',
+        department: 'Banking Engineering',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹8–11 LPA',
+        minLPA: 8,
+        maxLPA: 11,
+        openings: 35,
+        requirements: ['Strong Java & SQL', 'Familiarity with Spring Boot and DSA']
+      }
+    ]
+  },
+  {
+    id: 'comp-8',
+    name: 'Infosys',
+    logo: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&auto=format&fit=crop&q=80',
+    industry: 'IT & Digital Consulting',
+    description: 'Infosys is a global leader in next-generation digital services and consulting.',
+    website: 'https://www.infosys.com',
+    headquarters: 'Bengaluru, Karnataka',
+    locations: ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune'],
+    salaryDisplay: '₹8.0–9.5 LPA (Specialist Programmer)',
+    minLPA: 8.0,
+    maxLPA: 9.5,
+    requiredSkills: ['Java', 'Python', 'SQL', 'Data Structures & Algorithms'],
+    preferredSkills: ['Spring Boot', 'React', 'Cloud Services'],
+    minimumCgpa: 6.5,
+    companySize: '320,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Spring', 'Angular', 'Python', 'AWS', 'Oracle'],
+    benefits: ['Mysore World-class Training Campus', 'Health Insurance', 'Learning Subsidies'],
+    hiringProcess: [
+      { step: 1, title: 'HackWithInfy Assessment', description: 'Algorithmic coding contest.' },
+      { step: 2, title: 'Technical Interview', description: 'OOP concepts, project review, and SQL queries.' },
+      { step: 3, title: 'HR Round', description: 'Joining preferences and verification.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-infy-1',
+        title: 'Specialist Programmer (SP)',
+        department: 'Advanced Engineering',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹8.0–9.5 LPA',
+        minLPA: 8.0,
+        maxLPA: 9.5,
+        openings: 80,
+        requirements: ['Strong problem solving in Java or Python', 'Relational database proficiency']
+      }
+    ]
+  },
+  {
+    id: 'comp-9',
+    name: 'PayPal',
+    logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100&auto=format&fit=crop&q=80',
+    industry: 'FinTech & Digital Payments',
+    description: 'PayPal is at the forefront of the digital payment revolution, delivering secure financial services globally.',
+    website: 'https://careers.pypl.com',
+    headquarters: 'San Jose, CA (Tech Centers: Chennai & Bengaluru)',
+    locations: ['Chennai', 'Bengaluru'],
+    salaryDisplay: '₹16–24 LPA',
+    minLPA: 16,
+    maxLPA: 24,
+    requiredSkills: ['Java', 'Spring Boot', 'REST API', 'SQL', 'Data Structures & Algorithms'],
+    preferredSkills: ['Kafka', 'Docker', 'React', 'Microservices', 'Kubernetes'],
+    minimumCgpa: 7.5,
+    companySize: '30,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Spring Boot', 'Node.js', 'React', 'Oracle', 'Kafka', 'GCP'],
+    benefits: ['Stock Grants', 'Comprehensive Health Plan', 'Generous Paid Time Off'],
+    hiringProcess: [
+      { step: 1, title: 'HackerRank Online Assessment', description: '3 coding challenges on arrays and graphs.' },
+      { step: 2, title: 'Technical Round 1: DSA', description: 'Algorithm optimization and data structures.' },
+      { step: 3, title: 'Technical Round 2: System & Java', description: 'Concurrency, microservices and DB transactions.' },
+      { step: 4, title: 'Culture Fit Interview', description: 'Behavioral and architecture evaluation.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-pp-1',
+        title: 'Software Engineer - Backend',
+        department: 'Payment Processing',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹17–23 LPA',
+        minLPA: 17,
+        maxLPA: 23,
+        openings: 20,
+        requirements: ['Proficiency in Java and OOP architecture', 'Familiarity with REST APIs and database design']
+      }
+    ]
+  },
+  {
+    id: 'comp-10',
+    name: 'Cisco Systems',
+    logo: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=100&auto=format&fit=crop&q=80',
+    industry: 'Networking & Cybersecurity',
+    description: 'Cisco is the worldwide leader in technology that powers the Internet and secures digital connectivity.',
+    website: 'https://www.cisco.com/careers',
+    headquarters: 'San Jose, CA (India HQ: Bengaluru)',
+    locations: ['Bengaluru', 'Chennai'],
+    salaryDisplay: '₹15–20 LPA',
+    minLPA: 15,
+    maxLPA: 20,
+    requiredSkills: ['C++', 'Python', 'Computer Networks', 'Linux', 'Data Structures & Algorithms'],
+    preferredSkills: ['TCP/IP', 'Go', 'Docker', 'Git'],
+    minimumCgpa: 7.5,
+    companySize: '84,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['C++', 'Python', 'Go', 'Linux', 'Docker', 'Kubernetes'],
+    benefits: ['ESPP Stock Purchase Plan', 'Top Medical Coverage', 'Tuition Assistance'],
+    hiringProcess: [
+      { step: 1, title: 'Ideathon Online Test', description: 'Networking MCQs + Aptitude + 2 Coding Problems.' },
+      { step: 2, title: 'Technical Interview', description: 'OSI layers, socket programming, and memory pointers.' },
+      { step: 3, title: 'Managerial & HR Round', description: 'Situational scenarios and final terms.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-cisco-1',
+        title: 'Software Consulting Engineer',
+        department: 'Enterprise Networking & Security',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹15–19 LPA',
+        minLPA: 15,
+        maxLPA: 19,
+        openings: 22,
+        requirements: ['Strong grasp of Computer Networks and OS', 'Proficiency in C++ or Python']
+      }
+    ]
+  },
+  {
+    id: 'comp-11',
+    name: 'Oracle',
+    logo: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100&auto=format&fit=crop&q=80',
+    industry: 'Database & Cloud Infrastructure',
+    description: 'Oracle offers integrated suites of cloud applications plus secure, autonomous database infrastructure.',
+    website: 'https://oracle.com/careers',
+    headquarters: 'Austin, TX (India HQ: Bengaluru & Hyderabad)',
+    locations: ['Bengaluru', 'Hyderabad', 'Noida'],
+    salaryDisplay: '₹15–22 LPA',
+    minLPA: 15,
+    maxLPA: 22,
+    requiredSkills: ['Java', 'SQL', 'DBMS', 'Data Structures & Algorithms', 'C++'],
+    preferredSkills: ['Oracle Cloud', 'Distributed Systems', 'PL/SQL', 'Spring Boot'],
+    minimumCgpa: 7.5,
+    companySize: '140,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'C++', 'Oracle DB', 'OCI Cloud', 'Kubernetes'],
+    benefits: ['Flexible Work Options', 'Health Plans', 'Stock Purchase Plan'],
+    hiringProcess: [
+      { step: 1, title: 'Oracle Online Assessment', description: 'Aptitude, Core CS (DBMS, OS), and 2 coding tasks.' },
+      { step: 2, title: 'Technical Interview 1', description: 'Deep dive into SQL queries, indexing, and ACID.' },
+      { step: 3, title: 'Technical Interview 2 & HR', description: 'DSA, Java internals and behavioral checks.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-ora-1',
+        title: 'Associate Software Engineer',
+        department: 'Oracle Cloud Infrastructure (OCI)',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹15–20 LPA',
+        minLPA: 15,
+        maxLPA: 20,
+        openings: 30,
+        requirements: ['Solid understanding of DBMS and SQL optimization', 'Proficiency in Java or C++']
+      }
+    ]
+  },
+  {
+    id: 'comp-12',
+    name: 'Cognizant',
+    logo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=crop&q=80',
+    industry: 'IT Services & Digital Operations',
+    description: 'Cognizant engineers modern businesses, helping clients modernize technology and transform experiences.',
+    website: 'https://www.cognizant.com/careers',
+    headquarters: 'Teaneck, NJ (India HQ: Chennai)',
+    locations: ['Chennai', 'Bengaluru', 'Hyderabad', 'Pune'],
+    salaryDisplay: '₹6.75–9.0 LPA (GenC Next)',
+    minLPA: 6.75,
+    maxLPA: 9.0,
+    requiredSkills: ['Java', 'SQL', 'Python', 'JavaScript', 'HTML/CSS'],
+    preferredSkills: ['React', 'Spring Boot', 'Cloud Fundamentals', 'Git'],
+    minimumCgpa: 6.5,
+    companySize: '350,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Spring', 'React', 'SQL Server', 'Azure'],
+    benefits: ['Continuous Learning Programs', 'Health Insurance', 'Shift Allowances'],
+    hiringProcess: [
+      { step: 1, title: 'GenC Online Assessment', description: 'Aptitude, logical analysis, and coding test.' },
+      { step: 2, title: 'Technical Interview', description: 'Basic programming syntax, SQL queries, and project review.' },
+      { step: 3, title: 'HR Round', description: 'Communication skills and shift readiness.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-cts-1',
+        title: 'GenC Next Software Engineer',
+        department: 'Digital Modernization',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹6.75–9.0 LPA',
+        minLPA: 6.75,
+        maxLPA: 9.0,
+        openings: 90,
+        requirements: ['High score in GenC Next skill assessment', 'Strong foundational skills in Fullstack or Java']
+      }
+    ]
+  },
+  {
+    id: 'comp-13',
+    name: 'Amazon',
+    logo: 'https://images.unsplash.com/photo-1523474253243-231a51138b3a?w=100&auto=format&fit=crop&q=80',
+    industry: 'E-Commerce & Cloud Infrastructure',
+    description: 'Amazon is guided by four principles: customer obsession, passion for invention, commitment to operational excellence, and long-term thinking.',
+    website: 'https://amazon.jobs',
+    headquarters: 'Seattle, WA (India Centers: Bengaluru, Hyderabad, Chennai)',
+    locations: ['Bengaluru', 'Hyderabad', 'Chennai'],
+    salaryDisplay: '₹20–32 LPA',
+    minLPA: 20,
+    maxLPA: 32,
+    requiredSkills: ['Data Structures & Algorithms', 'Java', 'C++', 'Object Oriented Programming', 'System Design'],
+    preferredSkills: ['AWS', 'Distributed Systems', 'SQL', 'Microservices'],
+    minimumCgpa: 7.5,
+    companySize: '1,500,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'C++', 'AWS', 'Python', 'DynamoDB'],
+    benefits: ['Amazon RSUs', 'Comprehensive Medical & Life Cover', 'Relocation Bonus'],
+    hiringProcess: [
+      { step: 1, title: 'Online Assessment (OA1 & OA2)', description: 'DSA coding questions and Amazon Work Style Assessment.' },
+      { step: 2, title: 'Technical Interview 1 & 2', description: 'Trees, dynamic programming, and complexity.' },
+      { step: 3, title: 'Bar Raiser Round', description: 'Amazon Leadership Principles and system design.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-amz-1',
+        title: 'Software Development Engineer (SDE-1)',
+        department: 'AWS Platform & Retail Systems',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹20–32 LPA',
+        minLPA: 20,
+        maxLPA: 32,
+        openings: 50,
+        requirements: ['B.Tech in CSE / IT / ECE', 'Mastery in Data Structures, Algorithms, and Java/C++']
+      }
+    ]
+  },
+  {
+    id: 'comp-14',
+    name: 'Google',
+    logo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&auto=format&fit=crop&q=80',
+    industry: 'Search, Cloud & AI',
+    description: "Google's mission is to organize the world's information and make it universally accessible and useful.",
+    website: 'https://careers.google.com',
+    headquarters: 'Mountain View, CA (India Centers: Bengaluru, Hyderabad)',
+    locations: ['Bengaluru', 'Hyderabad'],
+    salaryDisplay: '₹24–38 LPA',
+    minLPA: 24,
+    maxLPA: 38,
+    requiredSkills: ['Data Structures & Algorithms', 'C++', 'Java', 'Python', 'System Design'],
+    preferredSkills: ['Go', 'GCP', 'Distributed Systems', 'Machine Learning'],
+    minimumCgpa: 8.0,
+    companySize: '180,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['C++', 'Java', 'Go', 'Python', 'Borg', 'Bigtable'],
+    benefits: ['Google Stock Units (GSUs)', 'Onsite Gourmet Meals', 'Top Health Benefits'],
+    hiringProcess: [
+      { step: 1, title: 'Google Online Challenge', description: '2 complex algorithmic problems.' },
+      { step: 2, title: 'Technical Rounds (3 Rounds)', description: 'Graph algorithms, DP, bit manipulation, and math.' },
+      { step: 3, title: 'Googliness & Leadership', description: 'Behavioral and collaborative alignment.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-goog-1',
+        title: 'Software Engineer (University Graduate)',
+        department: 'Google Cloud & Core Search',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹24–38 LPA',
+        minLPA: 24,
+        maxLPA: 38,
+        openings: 25,
+        requirements: ['Exceptional algorithmic intuition and clean code execution in C++/Java/Python']
+      }
+    ]
+  },
+  {
+    id: 'comp-15',
+    name: 'Adobe',
+    logo: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&auto=format&fit=crop&q=80',
+    industry: 'Digital Media & Cloud Software',
+    description: 'Adobe is the global leader in digital media and digital marketing solutions.',
+    website: 'https://www.adobe.com/careers',
+    headquarters: 'San Jose, CA (India Centers: Noida & Bengaluru)',
+    locations: ['Bengaluru', 'Noida'],
+    salaryDisplay: '₹18–26 LPA',
+    minLPA: 18,
+    maxLPA: 26,
+    requiredSkills: ['C++', 'Java', 'JavaScript', 'React', 'Data Structures & Algorithms'],
+    preferredSkills: ['Computer Graphics', 'WebAssembly', 'Node.js', 'Docker'],
+    minimumCgpa: 7.5,
+    companySize: '29,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['C++', 'JavaScript', 'React', 'Java', 'AWS'],
+    benefits: ['Adobe Stock Purchase Plan', 'Wellness Reimbursement', 'Flexible Work Options'],
+    hiringProcess: [
+      { step: 1, title: 'Adobe Co-Create Assessment', description: 'DSA coding questions and speed aptitude.' },
+      { step: 2, title: 'Technical Interview 1', description: 'Pointers, memory management, and tree recursion.' },
+      { step: 3, title: 'Technical Interview 2 & Director', description: 'Frontend engineering and system scalability.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-adb-1',
+        title: 'Software Engineer - Creative Cloud',
+        department: 'Digital Media Engineering',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹18–26 LPA',
+        minLPA: 18,
+        maxLPA: 26,
+        openings: 20,
+        requirements: ['Strong command over C++ or React/JavaScript', 'Solid fundamentals in Algorithms and Data Structures']
+      }
+    ]
+  },
+  {
+    id: 'comp-16',
+    name: 'Goldman Sachs',
+    logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100&auto=format&fit=crop&q=80',
+    industry: 'Global Banking & FinTech Platform',
+    description: 'Goldman Sachs is a leading global investment banking, securities and investment management firm.',
+    website: 'https://www.goldmansachs.com/careers',
+    headquarters: 'New York, NY (India Tech Hub: Bengaluru & Hyderabad)',
+    locations: ['Bengaluru', 'Hyderabad'],
+    salaryDisplay: '₹20–28 LPA',
+    minLPA: 20,
+    maxLPA: 28,
+    requiredSkills: ['Java', 'C++', 'SQL', 'Data Structures & Algorithms', 'Object Oriented Programming'],
+    preferredSkills: ['Spring Boot', 'Microservices', 'Kafka', 'Python'],
+    minimumCgpa: 7.8,
+    companySize: '45,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'C++', 'Spring Boot', 'Sybase', 'Kafka', 'React'],
+    benefits: ['Competitive Bonus', 'Comprehensive Medical Cover', 'Gym & Health Facilities'],
+    hiringProcess: [
+      { step: 1, title: 'Goldman Sachs Aptitude & Coding Test', description: 'Math, statistics, CS fundamentals, and 2 coding tasks.' },
+      { step: 2, title: 'Technical Round 1', description: 'DSA, hash maps, heaps, and SQL optimization.' },
+      { step: 3, title: 'Technical Round 2', description: 'System design, concurrency, and OOP architecture.' },
+      { step: 4, title: 'Managing Director Interview', description: 'Leadership, ethics, and career alignment.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-gs-1',
+        title: 'Engineering Analyst',
+        department: 'Global Markets Engineering',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹20–28 LPA',
+        minLPA: 20,
+        maxLPA: 28,
+        openings: 35,
+        requirements: ['Exceptional problem solving in Java / C++', 'Strong mathematics, probability, and database knowledge']
+      }
+    ]
+  },
+  {
+    id: 'comp-17',
+    name: 'Capgemini',
+    logo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=crop&q=80',
+    industry: 'Digital Transformation & Technology Consulting',
+    description: 'Capgemini is a global leader in partnering with companies to transform and manage their business by harnessing technology.',
+    website: 'https://www.capgemini.com/careers',
+    headquarters: 'Paris, France (India Centers: Chennai, Bengaluru, Pune, Hyderabad)',
+    locations: ['Chennai', 'Bengaluru', 'Pune', 'Hyderabad'],
+    salaryDisplay: '₹5.5–8.5 LPA (Senior Analyst / Exceller)',
+    minLPA: 5.5,
+    maxLPA: 8.5,
+    requiredSkills: ['Java', 'SQL', 'Python', 'HTML/CSS', 'JavaScript'],
+    preferredSkills: ['React', 'Spring Boot', 'Cloud Fundamentals'],
+    minimumCgpa: 6.0,
+    companySize: '350,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Spring', 'React', 'MySQL', 'AWS'],
+    benefits: ['Global Certification Subsidies', 'Health & Accidental Insurance', 'Flexible Hybrid Work'],
+    hiringProcess: [
+      { step: 1, title: 'Capgemini Exceller Test', description: 'Technical assessment, pseudo-code, and coding.' },
+      { step: 2, title: 'Technical Interview', description: 'Core programming language internals and SQL.' },
+      { step: 3, title: 'HR Round', description: 'Communication assessment and document validation.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-cap-1',
+        title: 'Software Engineer Analyst',
+        department: 'Financial Services & Digital',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹5.5–8.5 LPA',
+        minLPA: 5.5,
+        maxLPA: 8.5,
+        openings: 75,
+        requirements: ['Solid understanding of Java or Python', 'Basic knowledge of SQL databases and web development']
+      }
+    ]
+  },
+  {
+    id: 'comp-18',
+    name: 'Wipro',
+    logo: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&auto=format&fit=crop&q=80',
+    industry: 'Digital Engineering & Cloud Technologies',
+    description: 'Wipro is a leading technology services and consulting company focused on building innovative solutions that address clients complex digital transformation needs.',
+    website: 'https://www.wipro.com/careers',
+    headquarters: 'Bengaluru, Karnataka',
+    locations: ['Bengaluru', 'Chennai', 'Hyderabad', 'Pune'],
+    salaryDisplay: '₹6.5–9.0 LPA (Wipro Turbo / Elite)',
+    minLPA: 6.5,
+    maxLPA: 9.0,
+    requiredSkills: ['Java', 'Python', 'SQL', 'Data Structures & Algorithms'],
+    preferredSkills: ['Spring Boot', 'React', 'Docker', 'Git'],
+    minimumCgpa: 6.5,
+    companySize: '240,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Python', 'Spring Boot', 'React', 'Azure', 'PostgreSQL'],
+    benefits: ['Work Integrated Learning Programs', 'Health Insurance', 'Recognition Bonuses'],
+    hiringProcess: [
+      { step: 1, title: 'Wipro NLTH / Turbo Test', description: 'Aptitude, Essay Writing, and Advanced Coding.' },
+      { step: 2, title: 'Technical Interview', description: 'OOP, SQL joins, DSA arrays/strings, and academic project.' },
+      { step: 3, title: 'HR Round', description: 'Location preference and onboarding.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-wipro-1',
+        title: 'Project Engineer (Turbo)',
+        department: 'Cloud & Custom Applications',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹6.5–9.0 LPA',
+        minLPA: 6.5,
+        maxLPA: 9.0,
+        openings: 60,
+        requirements: ['Proficiency in Java or Python', 'Familiarity with Data Structures and Relational Databases']
+      }
+    ]
+  },
+  {
+    id: 'comp-19',
+    name: 'IBM',
+    logo: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100&auto=format&fit=crop&q=80',
+    industry: 'Hybrid Cloud & Cognitive Software',
+    description: 'IBM produces and sells computer hardware, middleware, and software, and provides hosting and consulting services in areas ranging from mainframe computers to nanotechnology.',
+    website: 'https://www.ibm.com/careers',
+    headquarters: 'Armonk, NY (India Centers: Bengaluru, Kochi, Hyderabad)',
+    locations: ['Bengaluru', 'Kochi', 'Hyderabad'],
+    salaryDisplay: '₹7.5–12.0 LPA',
+    minLPA: 7.5,
+    maxLPA: 12.0,
+    requiredSkills: ['Java', 'Python', 'SQL', 'Linux', 'Data Structures & Algorithms'],
+    preferredSkills: ['Docker', 'Kubernetes', 'Red Hat OpenShift', 'Spring Boot'],
+    minimumCgpa: 7.0,
+    companySize: '280,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'Python', 'Red Hat Linux', 'Kubernetes', 'Db2', 'React'],
+    benefits: ['Flexible Work Environment', 'Comprehensive Health Plan', 'Patent Reward Program'],
+    hiringProcess: [
+      { step: 1, title: 'Cognitive Ability & Coding Assessment', description: 'Interactive games and coding problems on HackerRank.' },
+      { step: 2, title: 'Technical Interview', description: 'Operating systems, Linux commands, SQL queries, and Java.' },
+      { step: 3, title: 'HR Round', description: 'Culture fit and role allocation.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-ibm-1',
+        title: 'Associate System Software Engineer',
+        department: 'Cloud & Cognitive Software Lab',
+        location: 'Bengaluru',
+        type: 'Full-time',
+        salary: '₹7.5–12.0 LPA',
+        minLPA: 7.5,
+        maxLPA: 12.0,
+        openings: 40,
+        requirements: ['Knowledge of Core Java, Python, and SQL', 'Familiarity with Linux and container basics']
+      }
+    ]
+  },
+  {
+    id: 'comp-20',
+    name: 'Thoughtworks',
+    logo: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100&auto=format&fit=crop&q=80',
+    industry: 'Agile Software Design & Digital Engineering',
+    description: 'Thoughtworks is a leading global technology consultancy that integrates strategy, design and software engineering to enable digital innovation.',
+    website: 'https://www.thoughtworks.com/careers',
+    headquarters: 'Chicago, IL (India Centers: Chennai, Bengaluru, Pune, Hyderabad)',
+    locations: ['Chennai', 'Bengaluru', 'Pune', 'Hyderabad'],
+    salaryDisplay: '₹9–13 LPA',
+    minLPA: 9,
+    maxLPA: 13,
+    requiredSkills: ['Java', 'JavaScript', 'React', 'SQL', 'Object Oriented Programming', 'Data Structures & Algorithms'],
+    preferredSkills: ['Test Driven Development (TDD)', 'Spring Boot', 'Microservices', 'Node.js'],
+    minimumCgpa: 7.0,
+    companySize: '12,000+ Employees',
+    hiringStatus: 'Currently Hiring',
+    techStack: ['Java', 'React', 'Node.js', 'PostgreSQL', 'Docker', 'AWS'],
+    benefits: ['Learning Budget & Books Allowance', 'Comprehensive Health Cover', 'Progressive Work Culture'],
+    hiringProcess: [
+      { step: 1, title: 'Short Coding Assessment', description: 'Clean code writing and problem solving.' },
+      { step: 2, title: 'Pair Programming Round', description: '90-minute live pair coding with Thoughtworks engineers focusing on clean code and TDD.' },
+      { step: 3, title: 'Technical & Architecture Interview', description: 'OOP concepts, design patterns, and database design.' },
+      { step: 4, title: 'Leadership & Social Change Interview', description: 'Values alignment and communication.' }
+    ],
+    openRoles: [
+      {
+        id: 'role-tw-1',
+        title: 'Graduate Developer / Consultant',
+        department: 'Custom Application Development',
+        location: 'Chennai',
+        type: 'Full-time',
+        salary: '₹9–13 LPA',
+        minLPA: 9,
+        maxLPA: 13,
+        openings: 25,
+        requirements: ['Strong command of clean coding in Java or JavaScript', 'Passion for Agile, TDD, and software craft']
+      }
+    ]
+  }
+];
+
+export function computeProfileStrength(profile) {
+  if (!profile) return 0;
+
+  const skillsCount = (profile.skills || []).length;
+  const projectsCount = (profile.projects || []).length;
+  const certsCount = (profile.certifications || []).length;
+  const hasCgpa = profile.cgpa && Number(profile.cgpa) > 0;
+  const hasResume = Boolean(profile.resumeFileName || (profile.resumeScore && profile.resumeScore > 0));
+
+  if (skillsCount === 0 && projectsCount === 0 && certsCount === 0 && !hasCgpa && !hasResume) {
+    return 0;
+  }
+
+  let score = 0;
+  score += Math.min(30, skillsCount * 5);
+  score += Math.min(30, projectsCount * 15);
+  if (hasCgpa) score += 10;
+  if (profile.college && profile.college.trim()) score += 5;
+  if (profile.department && profile.department.trim()) score += 5;
+  score += Math.min(10, certsCount * 5);
+  if (profile.careerPreferences?.preferredRoles?.length) score += 5;
+  if (hasResume) score += 5;
+
+  return Math.min(100, Math.max(0, score));
+}
+
+class DatabaseStore {
+  constructor() {
+    this.data = {
+      users: [
+        { id: 'user-student-a', name: 'Sasidharan R', email: 'student.a@university.edu', password: 'password123', role: 'student' },
+        { id: 'user-student-b', name: 'Priya Sharma', email: 'student.b@university.edu', password: 'password123', role: 'student' },
+        { id: 'user-admin', name: 'Placement Officer', email: 'admin@university.edu', password: 'password123', role: 'admin' }
+      ],
+      studentProfiles: INITIAL_STUDENT_PROFILES,
+      companies: INITIAL_COMPANIES,
+      applications: [
+        {
+          id: 'app-init-1',
+          studentId: 'user-student-a',
+          companyId: 'comp-1',
+          companyName: 'Zoho Corporation',
+          companyLogo: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=100&auto=format&fit=crop&q=80',
+          roleId: 'role-zoho-1',
+          roleTitle: 'Software Developer',
+          status: 'Technical Interview',
+          appliedDate: '2026-08-20',
+          matchScore: 88,
+          salary: '₹6–10 LPA',
+          location: 'Chennai',
+          notes: 'Cleared Round 1 & Round 2 coding assessment.'
+        }
+      ],
+      savedCompanies: {
+        'user-student-a': ['comp-1', 'comp-3'],
+        'user-student-b': ['comp-4', 'comp-5']
+      }
+    };
+    this.loadFromDisk();
+  }
+
+  loadFromDisk() {
+    try {
+      if (fs.existsSync(DATA_FILE)) {
+        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.companies && parsed.companies.length >= 10 && parsed.studentProfiles) {
+          this.data = parsed;
+          return;
+        }
+      }
+      this.saveToDisk();
+    } catch (e) {
+      console.warn('Could not load data_store.json, using memory store:', e.message);
+      this.saveToDisk();
+    }
+  }
+
+  saveToDisk() {
+    try {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
+    } catch (e) {
+      console.warn('Could not persist data_store.json to disk:', e.message);
+    }
+  }
+
+  // User methods
+  getUserByEmail(email) {
+    if (!email) return null;
+    return this.data.users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
+  }
+
+  getUserById(id) {
+    if (!id) return null;
+    return this.data.users.find(u => u.id === id);
+  }
+
+  addUser(user) {
+    this.data.users.push(user);
+    this.saveToDisk();
+    return user;
+  }
+
+  // Student Profile Methods
+  getStudentProfile(userId) {
+    let profile = this.data.studentProfiles.find(p => p.userId === userId || p.id === userId);
+    if (!profile) {
+      const user = this.getUserById(userId);
+      profile = {
+        userId,
+        id: `profile-${userId}`,
+        name: user?.name || 'Student',
+        email: user?.email || '',
+        phone: '',
+        location: '',
+        college: '',
+        degree: '',
+        department: '',
+        cgpa: 0,
+        graduationYear: 2026,
+        skills: [],
+        programmingLanguages: [],
+        certifications: [],
+        projects: [],
+        careerPreferences: {
+          preferredRoles: [],
+          preferredLocations: [],
+          experienceLevel: 'Fresher / Entry-level',
+          careerInterests: [],
+          minSalaryLPA: 0
+        },
+        softSkills: { aptitudeScore: 80, communicationScore: 80 },
+        resumeFileName: '',
+        resumeScore: 0,
+        profileStrength: 0
+      };
+      this.data.studentProfiles.push(profile);
+      this.saveToDisk();
+    }
+    return profile;
+  }
+
+  updateStudentProfile(userId, updates) {
+    let index = this.data.studentProfiles.findIndex(p => p.userId === userId || p.id === userId);
+    if (index === -1) {
+      this.getStudentProfile(userId);
+      index = this.data.studentProfiles.findIndex(p => p.userId === userId || p.id === userId);
+    }
+
+    const current = this.data.studentProfiles[index];
+    const updated = {
+      ...current,
+      ...updates,
+      userId,
+      id: current.id || `profile-${userId}`,
+      careerPreferences: {
+        ...(current.careerPreferences || {}),
+        ...(updates.careerPreferences || {})
+      },
+      softSkills: {
+        ...(current.softSkills || {}),
+        ...(updates.softSkills || {})
+      }
+    };
+
+    updated.profileStrength = computeProfileStrength(updated);
+    this.data.studentProfiles[index] = updated;
+
+    // Sync name/email to users array if updated
+    if (updates.name || updates.email) {
+      const uIndex = this.data.users.findIndex(u => u.id === userId);
+      if (uIndex !== -1) {
+        if (updates.name) this.data.users[uIndex].name = updates.name;
+        if (updates.email) this.data.users[uIndex].email = updates.email;
+      }
+    }
+
+    this.saveToDisk();
+    return updated;
+  }
+
+  getAllStudentsWithProfiles() {
+    return this.data.users
+      .filter(u => u.role === 'student')
+      .map(u => {
+        const prof = this.getStudentProfile(u.id);
+        return {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          degree: prof.degree || 'B.Tech',
+          department: prof.department || 'Computer Science and Engineering',
+          cgpa: prof.cgpa || 0,
+          skills: (prof.skills || []).map(s => typeof s === 'string' ? s : s.name),
+          profileStrength: prof.profileStrength || 0,
+          status: prof.cgpa >= 8.5 ? 'Shortlisted' : 'In Progress'
+        };
+      });
+  }
+
+  // Company Methods
+  getCompanies() {
+    return this.data.companies;
+  }
+
+  getCompanyById(id) {
+    return this.data.companies.find(c => c.id === id);
+  }
+
+  addCompany(companyData) {
+    const newCompany = {
+      ...companyData,
+      id: `comp-${Date.now()}`
+    };
+    this.data.companies.unshift(newCompany);
+    this.saveToDisk();
+    return newCompany;
+  }
+
+  updateCompany(id, updates) {
+    const index = this.data.companies.findIndex(c => c.id === id);
+    if (index !== -1) {
+      this.data.companies[index] = { ...this.data.companies[index], ...updates };
+      this.saveToDisk();
+      return this.data.companies[index];
+    }
+    return null;
+  }
+
+  deleteCompany(id) {
+    const initialLen = this.data.companies.length;
+    this.data.companies = this.data.companies.filter(c => c.id !== id);
+    this.saveToDisk();
+    return this.data.companies.length < initialLen;
+  }
+
+  // Application Methods
+  getApplications(studentId) {
+    return this.data.applications.filter(a => a.studentId === studentId);
+  }
+
+  getApplicationById(id) {
+    return this.data.applications.find(a => a.id === id);
+  }
+
+  createApplication(appData) {
+    const newApp = {
+      ...appData,
+      id: `app-${Date.now()}`,
+      appliedDate: new Date().toISOString().split('T')[0],
+      lastUpdated: new Date().toISOString().split('T')[0]
+    };
+    this.data.applications.unshift(newApp);
+    this.saveToDisk();
+    return newApp;
+  }
+
+  updateApplication(id, updates) {
+    const index = this.data.applications.findIndex(a => a.id === id);
+    if (index !== -1) {
+      this.data.applications[index] = {
+        ...this.data.applications[index],
+        ...updates,
+        lastUpdated: new Date().toISOString().split('T')[0]
+      };
+      this.saveToDisk();
+      return this.data.applications[index];
+    }
+    return null;
+  }
+
+  deleteApplication(id) {
+    this.data.applications = this.data.applications.filter(a => a.id !== id);
+    this.saveToDisk();
+    return true;
+  }
+
+  // Saved Companies Methods
+  getSavedCompanyIds(studentId) {
+    return this.data.savedCompanies[studentId] || [];
+  }
+
+  toggleSavedCompany(studentId, companyId) {
+    if (!this.data.savedCompanies[studentId]) {
+      this.data.savedCompanies[studentId] = [];
+    }
+    const list = this.data.savedCompanies[studentId];
+    const exists = list.includes(companyId);
+    if (exists) {
+      this.data.savedCompanies[studentId] = list.filter(id => id !== companyId);
+    } else {
+      this.data.savedCompanies[studentId].push(companyId);
+    }
+    this.saveToDisk();
+    return !exists;
+  }
+}
+
+export const db = new DatabaseStore();
+
+// Attempt async MongoDB connection if URI provided
+export async function connectMongoDB() {
+  const uri = process.env.MONGODB_URI;
+  if (uri) {
+    try {
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
+      console.log('MongoDB connected successfully to', uri);
+    } catch (err) {
+      console.warn('MongoDB connection skipped/failed, using local persistent DB store:', err.message);
+    }
+  }
+}
